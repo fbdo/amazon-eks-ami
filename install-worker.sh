@@ -128,6 +128,26 @@ sudo mv $TEMPLATE_DIR/eni-max-pods.txt /etc/eks/eni-max-pods.txt
 sudo mv $TEMPLATE_DIR/bootstrap.sh /etc/eks/bootstrap.sh
 sudo chmod +x /etc/eks/bootstrap.sh
 
+###################################################
+# Install and configure CloudWatch Agent
+###################################################
+# Download Agent
+cd /tmp/
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/linux/amd64/latest/AmazonCloudWatchAgent.zip
+# Unzip Package
+unzip AmazonCloudWatchAgent.zip
+# Install Package
+sudo ./install.sh
+
+# Copy configuration file
+sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc
+sudo mv $TEMPLATE_DIR/awsagent.json /opt/aws/amazon-cloudwatch-agent/etc/awsagent.json
+
+# Start agent
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/awsagent.json -s
+
+sudo service amazon-cloudwatch-agent status
+
 # Clean up yum caches to reduce the image size
 sudo yum clean all
 sudo rm -rf \
