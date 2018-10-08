@@ -1,6 +1,6 @@
 {
   "variables": {
-    "aws_region": "us-west-2",
+    "aws_region": "eu-west-1",
     "ami_name": "amazon-eks-node-{{timestamp}}",
     "binary_bucket_name": "amazon-eks",
     "binary_bucket_region": "us-west-2",
@@ -9,12 +9,14 @@
     "instance_type": "m4.large",
     "source_ami_id": "",
     "encrypted": "false",
-    "kms_key_id": ""
+    "kms_key_id": "",
+    "subnet_id": "{{env `SUBNET_ID`}}"
   },
 
   "builders": [
     {
       "type": "amazon-ebs",
+      "subnet_id": "{{user `subnet_id`}}",
       "region": "{{user `aws_region`}}",
       "source_ami": "{{user `source_ami_id`}}",
       "source_ami_filter": {
