@@ -15,6 +15,9 @@ function print_help {
     echo "--b64-cluster-ca The base64 encoded cluster CA content. Only valid when used with --apiserver-endpoint. Bypasses calling \"aws eks describe-cluster\""
     echo "--apiserver-endpoint The EKS cluster API Server endpoint. Only valid when used with --b64-cluster-ca. Bypasses calling \"aws eks describe-cluster\""
     echo "--kubelet-extra-args Extra arguments to add to the kubelet. Useful for adding labels or taints."
+    echo "--http-proxy Adds HTTP_PROXY config to kubelet"
+    echo "--https-proxy Adds HTTPS_PROXY config to kubelet"
+    echo "--no-proxy Adds NO_PROXY config to kubelet"
 }
 
 POSITIONAL=()
@@ -46,6 +49,21 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        --http-proxy)
+            HTTP_PROXY=$2
+            shift
+            shift
+            ;;
+        --https-proxy)
+            HTTPS_PROXY=$2
+            shift
+            shift
+            ;;
+        --no-proxy)
+            NO_PROXY=$2
+            shift
+            shift
+            ;;
         *)    # unknown option
             POSITIONAL+=("$1") # save it in an array for later
             shift # past argument
@@ -62,6 +80,9 @@ USE_MAX_PODS="${USE_MAX_PODS:-true}"
 B64_CLUSTER_CA="${B64_CLUSTER_CA:-}"
 APISERVER_ENDPOINT="${APISERVER_ENDPOINT:-}"
 KUBELET_EXTRA_ARGS="${KUBELET_EXTRA_ARGS:-}"
+HTTP_PROXY="${HTTP_PROXY:-}"
+HTTPS_PROXY="${HTTPS_PROXY:-}"
+NO_PROXY="${NO_PROXY:-}"
 
 if [ -z "$CLUSTER_NAME" ]; then
     echo "CLUSTER_NAME is not defined"
@@ -126,6 +147,48 @@ if [[ -n "$KUBELET_EXTRA_ARGS" ]]; then
     cat <<EOF > /etc/systemd/system/kubelet.service.d/30-kubelet-extra-args.conf
 [Service]
 Environment='KUBELET_EXTRA_ARGS=$KUBELET_EXTRA_ARGS'
+EOF
+fi
+
+if [[ -n "$HTTP_PROXY" ]]; then
+    cat <<EOF > /etc/systemd/system/kubelet.service.d/http-proxy.conf
+[Service]
+Environment='HTTP_PROXY=$HTTP_PROXY'
+EOF
+    cat <<EOF >> /etc/sysconfig/docker
+export http_proxy=$HTTP_PROXY
+export HTTP_PROXY=$HTTP_PROXY
+EOF
+    cat <<EOF >> /etc/profile
+export http_proxy=$HTTP_PROXY
+EOF
+fi
+
+if [[ -n "$HTTPS_PROXY" ]]; then
+    cat <<EOF > /etc/systemd/system/kubelet.service.d/https-proxy.conf
+[Service]
+Environment='HTTPS_PROXY=$HTTPS_PROXY'
+EOF
+    cat <<EOF >> /etc/sysconfig/docker
+export https_proxy=$HTTPS_PROXY
+export HTTPS_PROXY=$HTTPS_PROXY
+EOF
+    cat <<EOF >> /etc/profile
+export https_proxy=$HTTPS_PROXY
+EOF
+fi
+
+if [[ -n "$NO_PROXY" ]]; then
+    cat <<EOF > /etc/systemd/system/kubelet.service.d/no-proxy.conf
+[Service]
+Environment='NO_PROXY=$NO_PROXY'
+EOF
+    cat <<EOF >> /etc/sysconfig/docker
+export no_proxy=$NO_PROXY
+export NO_PROXY=$NO_PROXY
+EOF
+    cat <<EOF >> /etc/profile
+export no_proxy=$NO_PROXY
 EOF
 fi
 

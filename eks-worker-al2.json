@@ -50,7 +50,7 @@
           "created": "{{timestamp}}"
       },
       "ami_name": "{{user `ami_name`}}",
-      "ami_description": "EKS Kubernetes Worker and CloudWatch Agent AMI over AmazonLinux2 image"
+      "ami_description": "EKS Kubernetes Worker and CloudWatch Agent AMI with optional proxy over AmazonLinux2 image"
     }
   ],
 
