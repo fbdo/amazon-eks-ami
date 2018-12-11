@@ -155,6 +155,10 @@ if [[ -n "$HTTP_PROXY" ]]; then
 [Service]
 Environment='HTTP_PROXY=$HTTP_PROXY'
 EOF
+    cat <<EOF > /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment='HTTP_PROXY=$HTTP_PROXY'
+EOF
     cat <<EOF >> /etc/sysconfig/docker
 export http_proxy=$HTTP_PROXY
 export HTTP_PROXY=$HTTP_PROXY
@@ -166,6 +170,10 @@ fi
 
 if [[ -n "$HTTPS_PROXY" ]]; then
     cat <<EOF > /etc/systemd/system/kubelet.service.d/https-proxy.conf
+[Service]
+Environment='HTTPS_PROXY=$HTTPS_PROXY'
+EOF
+    cat <<EOF > /etc/systemd/system/docker.service.d/https-proxy.conf
 [Service]
 Environment='HTTPS_PROXY=$HTTPS_PROXY'
 EOF
@@ -183,6 +191,10 @@ if [[ -n "$NO_PROXY" ]]; then
 [Service]
 Environment='NO_PROXY=$NO_PROXY'
 EOF
+    cat <<EOF > /etc/systemd/system/docker.service.d/no-proxy.conf
+[Service]
+Environment='NO_PROXY=$NO_PROXY'
+EOF
     cat <<EOF >> /etc/sysconfig/docker
 export no_proxy=$NO_PROXY
 export NO_PROXY=$NO_PROXY
@@ -193,5 +205,7 @@ EOF
 fi
 
 systemctl daemon-reload
+systemctl enable docker
 systemctl enable kubelet
+systemctl start docker
 systemctl start kubelet

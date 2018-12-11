@@ -54,9 +54,11 @@ sudo amazon-linux-extras enable docker
 sudo yum install -y docker-17.06*
 sudo usermod -aG docker $USER
 
-# Enable docker daemon to start on boot.
+sudo mkdir -p /etc/systemd/system/docker.service.d
+
+# Disable docker while finishing detup
 sudo systemctl daemon-reload
-sudo systemctl enable docker
+sudo systemctl disable docker
 
 ################################################################################
 ### Logrotate ##################################################################
